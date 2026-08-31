@@ -1,0 +1,5 @@
+package com.portfolio.service;
+import com.portfolio.dto.*; import com.portfolio.entity.User; import com.portfolio.repository.UserRepository; import com.portfolio.security.JwtService; import org.springframework.security.authentication.*; import org.springframework.security.core.userdetails.UserDetails; import org.springframework.security.crypto.password.PasswordEncoder; import org.springframework.stereotype.Service;
+@Service public class AuthService { private final AuthenticationManager am; private final UserRepository repo; private final JwtService jwt;
+ public AuthService(AuthenticationManager am,UserRepository repo,JwtService jwt){this.am=am;this.repo=repo;this.jwt=jwt;}
+ public LoginResponse login(LoginRequest r){am.authenticate(new UsernamePasswordAuthenticationToken(r.username(),r.password())); User u=repo.findByUsername(r.username()).orElseThrow(); UserDetails d=org.springframework.security.core.userdetails.User.withUsername(u.getUsername()).password(u.getPassword()).roles(u.getRole().name()).build(); return new LoginResponse(jwt.generateToken(d),"Bearer",u.getUsername());}}
