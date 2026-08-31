@@ -3,7 +3,6 @@ package com.portfolio.service;
 import com.portfolio.entity.Video;
 import com.portfolio.repository.VideoRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -11,13 +10,9 @@ import java.util.List;
 public class VideoService {
 
  private final VideoRepository repo;
- private final CloudinaryService cloudinary;
 
- private static final String FOLDER = "portfolio_videos";
-
- public VideoService(VideoRepository repo, CloudinaryService cloudinary) {
+ public VideoService(VideoRepository repo) {
   this.repo = repo;
-  this.cloudinary = cloudinary;
  }
 
  // Public: all videos
@@ -38,19 +33,16 @@ public class VideoService {
   return repo.findAll();
  }
 
- // Admin: create video
- public Video create(String title, MultipartFile file) {
+ // Admin: create video (URL already uploaded to Cloudinary by frontend)
+ public Video create(String title, String videoUrl) {
 
   if (title == null || title.trim().isEmpty()) {
    throw new IllegalArgumentException("Title is required");
   }
 
-  if (file == null || file.isEmpty()) {
-   throw new IllegalArgumentException("Video file is required");
+  if (videoUrl == null || videoUrl.trim().isEmpty()) {
+   throw new IllegalArgumentException("Video URL is required");
   }
-
-  // Upload to Cloudinary instead of local disk
-  String videoUrl = cloudinary.uploadVideo(file, FOLDER);
 
   Video video = new Video();
   video.setTitle(title);
@@ -60,7 +52,7 @@ public class VideoService {
  }
 
  // Admin: update video
- public Video update(Long id, String title, MultipartFile file) {
+ public Video update(Long id, String title, String videoUrl) {
 
   Video video = get(id);
 
@@ -68,17 +60,8 @@ public class VideoService {
    video.setTitle(title);
   }
 
-  // If new video is selected
-  if (file != null && !file.isEmpty()) {
-
-   String oldUrl = video.getVideoUrl();
-
-   String newUrl = cloudinary.uploadVideo(file, FOLDER);
-
-   video.setVideoUrl(newUrl);
-
-   // Delete old video from Cloudinary
-   cloudinary.deleteVideo(oldUrl);
+  if (videoUrl != null && !videoUrl.trim().isEmpty()) {
+   video.setVideoUrl(videoUrl);
   }
 
   return repo.save(video);
@@ -86,13 +69,7 @@ public class VideoService {
 
  // Admin: delete video
  public void delete(Long id) {
-
   Video video = get(id);
-
-  // Delete video from Cloudinary
-  cloudinary.deleteVideo(video.getVideoUrl());
-
-  // Delete database record
   repo.delete(video);
  }
 }

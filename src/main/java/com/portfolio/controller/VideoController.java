@@ -2,9 +2,7 @@ package com.portfolio.controller;
 
 import com.portfolio.entity.Video;
 import com.portfolio.service.VideoService;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -17,6 +15,9 @@ public class VideoController {
  public VideoController(VideoService s) {
   this.s = s;
  }
+
+ // Request body for create/update (title + Cloudinary URL)
+ public record VideoRequest(String title, String videoUrl) {}
 
  // Public: saare videos
  @GetMapping
@@ -36,29 +37,19 @@ public class VideoController {
   return s.adminAll();
  }
 
- // Admin: upload video
- @PostMapping(
-         value = "/admin",
-         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
- )
- public Video create(
-         @RequestParam String title,
-         @RequestPart MultipartFile file
- ) {
-  return s.create(title, file);
+ // Admin: create video (Cloudinary URL already uploaded by frontend)
+ @PostMapping("/admin")
+ public Video create(@RequestBody VideoRequest request) {
+  return s.create(request.title(), request.videoUrl());
  }
 
  // Admin: update video
- @PutMapping(
-         value = "/admin/{id}",
-         consumes = MediaType.MULTIPART_FORM_DATA_VALUE
- )
+ @PutMapping("/admin/{id}")
  public Video update(
          @PathVariable Long id,
-         @RequestParam(required = false) String title,
-         @RequestPart(required = false) MultipartFile file
+         @RequestBody VideoRequest request
  ) {
-  return s.update(id, title, file);
+  return s.update(id, request.title(), request.videoUrl());
  }
 
  // Admin: delete video
