@@ -83,9 +83,8 @@ public class SecurityConfig {
 
         CorsConfiguration c = new CorsConfiguration();
 
-        // Netlify frontend
-        c.setAllowedOrigins(List.of(
-                "https://polite-torte-a19c27.netlify.app"
+        c.setAllowedOriginPatterns(List.of(
+                "https://*.netlify.app"
         ));
 
         c.setAllowedMethods(List.of(
@@ -100,11 +99,11 @@ public class SecurityConfig {
 
         c.setAllowCredentials(false);
 
-        UrlBasedCorsConfigurationSource s =
+        UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
 
-        s.registerCorsConfiguration("/**", c);
+        source.registerCorsConfiguration("/**", c);
 
-        return s;
+        return source;
     }
 }
