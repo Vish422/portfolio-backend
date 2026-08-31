@@ -47,18 +47,22 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(
             HttpSecurity http,
-            JwtAuthenticationFilter jwt) throws Exception {
+            JwtAuthenticationFilter jwt,
+            CorsConfigurationSource corsConfigurationSource) throws Exception {
 
         http
                 .csrf(c -> c.disable())
 
-                .cors(c -> {})
+                .cors(c -> c.configurationSource(corsConfigurationSource))
 
                 .sessionManagement(s ->
                         s.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(a -> a
+                        .requestMatchers(
+                                org.springframework.http.HttpMethod.OPTIONS, "/**"
+                        ).permitAll()
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/images/**",
@@ -79,12 +83,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    CorsConfigurationSource cors() {
+    CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration c = new CorsConfiguration();
 
         c.setAllowedOriginPatterns(List.of(
-                "https://*.netlify.app"
+                "https://*.netlify.app",
+                "http://localhost:*"
         ));
 
         c.setAllowedMethods(List.of(
@@ -92,12 +97,15 @@ public class SecurityConfig {
                 "POST",
                 "PUT",
                 "DELETE",
-                "OPTIONS"
+                "OPTIONS",
+                "PATCH"
         ));
 
         c.setAllowedHeaders(List.of("*"));
 
-        c.setAllowCredentials(false);
+        c.setExposedHeaders(List.of("Authorization"));
+
+        c.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
