@@ -11,11 +11,13 @@ import java.util.List;
 public class VideoService {
 
  private final VideoRepository repo;
- private final FileStorageService files;
+ private final CloudinaryService cloudinary;
 
- public VideoService(VideoRepository repo, FileStorageService files) {
+ private static final String FOLDER = "portfolio_videos";
+
+ public VideoService(VideoRepository repo, CloudinaryService cloudinary) {
   this.repo = repo;
-  this.files = files;
+  this.cloudinary = cloudinary;
  }
 
  // Public: all videos
@@ -47,8 +49,8 @@ public class VideoService {
    throw new IllegalArgumentException("Video file is required");
   }
 
-  // Save video inside uploads/videos
-  String videoUrl = files.save(file, "videos");
+  // Upload to Cloudinary instead of local disk
+  String videoUrl = cloudinary.uploadVideo(file, FOLDER);
 
   Video video = new Video();
   video.setTitle(title);
@@ -71,12 +73,12 @@ public class VideoService {
 
    String oldUrl = video.getVideoUrl();
 
-   String newUrl = files.save(file, "videos");
+   String newUrl = cloudinary.uploadVideo(file, FOLDER);
 
    video.setVideoUrl(newUrl);
 
-   // Delete old video
-   files.deleteByUrl(oldUrl);
+   // Delete old video from Cloudinary
+   cloudinary.deleteVideo(oldUrl);
   }
 
   return repo.save(video);
@@ -87,8 +89,8 @@ public class VideoService {
 
   Video video = get(id);
 
-  // Delete physical video file
-  files.deleteByUrl(video.getVideoUrl());
+  // Delete video from Cloudinary
+  cloudinary.deleteVideo(video.getVideoUrl());
 
   // Delete database record
   repo.delete(video);
