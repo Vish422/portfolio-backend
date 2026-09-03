@@ -88,6 +88,8 @@ public class SecurityConfig {
         CorsConfiguration c = new CorsConfiguration();
 
         c.setAllowedOriginPatterns(List.of(
+                "https://vishalcreates.in",
+                "https://www.vishalcreates.in",
                 "https://*.netlify.app",
                 "http://localhost:*"
         ));
