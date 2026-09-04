@@ -69,6 +69,7 @@ public class SecurityConfig {
                                 "/api/videos/**",
                                 "/api/categories/**",
                                 "/uploads/**",
+                                "/api/payment/**",
                                 "/error"
                         ).permitAll()
                         .anyRequest().hasRole("OWNER")
